@@ -41,7 +41,7 @@ public class Entry extends BaseEntry implements Parcelable {
      * @param y the y value (the actual value of the entry)
      * @param data Spot for additional data this Entry represents.
      */
-    public Entry(float x, float y, Object data) {
+    public  Entry(float x, float y, Object data) {
         super(y, data);
         this.x = x;
     }

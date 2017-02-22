@@ -633,6 +633,19 @@ public class PieChart extends PieRadarChartBase<PieData> {
     }
 
     /**
+     * Sets the colors the entry labels are drawn with.
+     *
+     * @param colors
+     */
+    public void setEntryLabelColors(int... colors) {
+        for (int i = 0; i < ((PieChartRenderer) mRenderer).getPaintsEntryLabels().size(); i++) {
+            Paint paint = ((PieChartRenderer) mRenderer).getPaintsEntryLabels().get(i);
+            paint.setColor(colors[i]);
+        }
+    }
+
+
+    /**
      * Sets a custom Typeface for the drawing of the entry labels.
      *
      * @param tf

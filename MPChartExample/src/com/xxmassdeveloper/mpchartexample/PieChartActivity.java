@@ -19,7 +19,6 @@ import android.widget.TextView;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.Legend.LegendPosition;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -204,10 +203,13 @@ public class PieChartActivity extends DemoBase implements OnSeekBarChangeListene
 
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-        for (int i = 0; i < count ; i++) {
+        for (int i = 0; i < count; i++) {
+
+            int R = (int) (Math.random() * 256);
+            int G = (int) (Math.random() * 256);
+            int B = (int) (Math.random() * 256);
             entries.add(new PieEntry((float) ((Math.random() * mult) + mult / 5),
-                    mParties[i % mParties.length],
-                    getResources().getDrawable(R.drawable.star)));
+                    mParties[i % mParties.length], Color.rgb(R, G, B)));
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "Election Results");

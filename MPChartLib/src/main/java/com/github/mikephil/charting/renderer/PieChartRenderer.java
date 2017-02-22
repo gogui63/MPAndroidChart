@@ -31,6 +31,7 @@ import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PieChartRenderer extends DataRenderer {
@@ -54,7 +55,8 @@ public class PieChartRenderer extends DataRenderer {
     /**
      * paint object used for drwing the slice-text
      */
-    private Paint mEntryLabelsPaint;
+    private Paint mDefaultEntryLabelsPaint;
+    private List<Paint> mEntryLabelsPaints = new ArrayList<>();
 
     private StaticLayout mCenterTextLayout;
     private CharSequence mCenterTextLastValue;
@@ -90,10 +92,12 @@ public class PieChartRenderer extends DataRenderer {
         mValuePaint.setColor(Color.WHITE);
         mValuePaint.setTextAlign(Align.CENTER);
 
-        mEntryLabelsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mEntryLabelsPaint.setColor(Color.WHITE);
-        mEntryLabelsPaint.setTextAlign(Align.CENTER);
-        mEntryLabelsPaint.setTextSize(Utils.convertDpToPixel(13f));
+        mDefaultEntryLabelsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mDefaultEntryLabelsPaint.setColor(Color.WHITE);
+        mDefaultEntryLabelsPaint.setTextAlign(Align.CENTER);
+        mDefaultEntryLabelsPaint.setTextSize(Utils.convertDpToPixel(13f));
+
+        mEntryLabelsPaints.add(mDefaultEntryLabelsPaint);
 
         mValueLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mValueLinePaint.setStyle(Style.STROKE);
@@ -112,7 +116,12 @@ public class PieChartRenderer extends DataRenderer {
     }
 
     public Paint getPaintEntryLabels() {
-        return mEntryLabelsPaint;
+        return mDefaultEntryLabelsPaint;
+    }
+
+
+    public List<Paint> getPaintsEntryLabels() {
+        return mEntryLabelsPaints;
     }
 
     @Override
@@ -453,6 +462,14 @@ public class PieChartRenderer extends DataRenderer {
 
                 PieEntry entry = dataSet.getEntryForIndex(j);
 
+                if(entry.getColor() != 0){
+                    Paint entryPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    entryPaint.setColor(entry.getColor());
+                    entryPaint.setTextAlign(Align.CENTER);
+                    entryPaint.setTextSize(Utils.convertDpToPixel(13f));
+                    mEntryLabelsPaints.add(entryPaint);
+                }
+
                 if (xIndex == 0)
                     angle = 0.f;
                 else
@@ -518,8 +535,11 @@ public class PieChartRenderer extends DataRenderer {
 
                         mValuePaint.setTextAlign(Align.RIGHT);
 
-                        if(drawXOutside)
-                            mEntryLabelsPaint.setTextAlign(Align.RIGHT);
+                        if (drawXOutside && mEntryLabelsPaints.size() == 1) {
+                            mEntryLabelsPaints.get(0).setTextAlign(Align.RIGHT);
+                        } else {
+                            mEntryLabelsPaints.get(j).setTextAlign(Align.RIGHT);
+                        }
 
                         labelPtx = pt2x - offset;
                         labelPty = pt2y;
@@ -528,8 +548,12 @@ public class PieChartRenderer extends DataRenderer {
                         pt2y = pt1y;
                         mValuePaint.setTextAlign(Align.LEFT);
 
-                        if(drawXOutside)
-                            mEntryLabelsPaint.setTextAlign(Align.LEFT);
+
+                        if (drawXOutside) {
+                            mEntryLabelsPaints.get(0).setTextAlign(Align.LEFT);
+                        } else {
+                            mEntryLabelsPaints.get(j).setTextAlign(Align.LEFT);
+                        }
 
                         labelPtx = pt2x + offset;
                         labelPty = pt2y;
@@ -553,15 +577,16 @@ public class PieChartRenderer extends DataRenderer {
                                 dataSet.getValueTextColor(j));
 
                         if (j < data.getEntryCount() && entry.getLabel() != null) {
-                            drawEntryLabel(c, entry.getLabel(), labelPtx, labelPty + lineHeight);
+                            drawEntryLabel(c, entry.getLabel(), labelPtx, labelPty + lineHeight,
+                                    mEntryLabelsPaints.size() == 1 ? mEntryLabelsPaints.get(0) : mEntryLabelsPaints.get(j));
                         }
 
                     } else if (drawXOutside) {
                         if (j < data.getEntryCount() && entry.getLabel() != null) {
-                            drawEntryLabel(c, entry.getLabel(), labelPtx, labelPty + lineHeight / 2.f);
+                            drawEntryLabel(c, entry.getLabel(), labelPtx, labelPty + lineHeight / 2.f,
+                                    mEntryLabelsPaints.size() == 1 ? mEntryLabelsPaints.get(0) : mEntryLabelsPaints.get(j));
                         }
                     } else if (drawYOutside) {
-
                         drawValue(c, formatter, value, entry, 0, labelPtx, labelPty + lineHeight / 2.f, dataSet
                                 .getValueTextColor(j));
                     }
@@ -580,12 +605,14 @@ public class PieChartRenderer extends DataRenderer {
                         drawValue(c, formatter, value, entry, 0, x, y, dataSet.getValueTextColor(j));
 
                         if (j < data.getEntryCount() && entry.getLabel() != null) {
-                            drawEntryLabel(c, entry.getLabel(), x, y + lineHeight);
+                            drawEntryLabel(c, entry.getLabel(), x, y + lineHeight,
+                                    mEntryLabelsPaints.size() == 1 ? mEntryLabelsPaints.get(0) : mEntryLabelsPaints.get(j));
                         }
 
                     } else if (drawXInside) {
                         if (j < data.getEntryCount() && entry.getLabel() != null) {
-                            drawEntryLabel(c, entry.getLabel(), x, y + lineHeight / 2f);
+                            drawEntryLabel(c, entry.getLabel(), x, y + lineHeight / 2f,
+                                    mEntryLabelsPaints.size() == 1 ? mEntryLabelsPaints.get(0) : mEntryLabelsPaints.get(j));
                         }
                     } else if (drawYInside) {
 
@@ -604,8 +631,8 @@ public class PieChartRenderer extends DataRenderer {
                     Utils.drawImage(
                             c,
                             icon,
-                            (int)x,
-                            (int)y,
+                            (int) x,
+                            (int) y,
                             icon.getIntrinsicWidth(),
                             icon.getIntrinsicHeight());
                 }
@@ -627,8 +654,8 @@ public class PieChartRenderer extends DataRenderer {
      * @param x
      * @param y
      */
-    protected void drawEntryLabel(Canvas c, String label, float x, float y) {
-        c.drawText(label, x, y, mEntryLabelsPaint);
+    protected void drawEntryLabel(Canvas c, String label, float x, float y, Paint paint) {
+        c.drawText(label, x, y, paint);
     }
 
     @Override
@@ -683,6 +710,7 @@ public class PieChartRenderer extends DataRenderer {
     }
 
     protected Path mDrawCenterTextPathBuffer = new Path();
+
     /**
      * draws the description text in the center of the pie chart makes most
      * sense when center-hole is enabled
@@ -756,6 +784,7 @@ public class PieChartRenderer extends DataRenderer {
     }
 
     protected RectF mDrawHighlightedRectF = new RectF();
+
     @Override
     public void drawHighlighted(Canvas c, Highlight[] indices) {
 
@@ -775,7 +804,7 @@ public class PieChartRenderer extends DataRenderer {
                 : 0.f;
 
         final RectF highlightedCircleBox = mDrawHighlightedRectF;
-        highlightedCircleBox.set(0,0,0,0);
+        highlightedCircleBox.set(0, 0, 0, 0);
 
         for (int i = 0; i < indices.length; i++) {
 

@@ -10,6 +10,7 @@ import android.util.Log;
 @SuppressLint("ParcelCreator")
 public class PieEntry extends Entry {
 
+    private int color;
     private String label;
 
     public PieEntry(float value) {
@@ -31,6 +32,12 @@ public class PieEntry extends Entry {
     public PieEntry(float value, String label) {
         super(0f, value);
         this.label = label;
+    }
+
+    public PieEntry(float value, String label, int color) {
+        super(0f, value);
+        this.label = label;
+        this.color = color;
     }
 
     public PieEntry(float value, String label, Object data) {
@@ -59,6 +66,10 @@ public class PieEntry extends Entry {
 
     public String getLabel() {
         return label;
+    }
+
+    public int getColor() {
+        return color;
     }
 
     public void setLabel(String label) {
