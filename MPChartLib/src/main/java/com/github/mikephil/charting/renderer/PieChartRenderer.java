@@ -45,30 +45,31 @@ public class PieChartRenderer extends DataRenderer {
     protected Paint mHolePaint;
     protected Paint mTransparentCirclePaint;
     protected Paint mValueLinePaint;
-
+    /**
+     * Bitmap for drawing the center hole
+     */
+    protected WeakReference<Bitmap> mDrawBitmap;
+    protected Canvas mBitmapCanvas;
+    protected Path mDrawCenterTextPathBuffer = new Path();
+    protected RectF mDrawHighlightedRectF = new RectF();
     /**
      * paint object for the text that can be displayed in the center of the
      * chart
      */
     private TextPaint mCenterTextPaint;
-
     /**
      * paint object used for drwing the slice-text
      */
     private Paint mDefaultEntryLabelsPaint;
     private List<Paint> mEntryLabelsPaints = new ArrayList<>();
-
     private StaticLayout mCenterTextLayout;
     private CharSequence mCenterTextLastValue;
     private RectF mCenterTextLastBounds = new RectF();
     private RectF[] mRectBuffer = {new RectF(), new RectF(), new RectF()};
+    private Path mPathBuffer = new Path();
+    private RectF mInnerRectBuffer = new RectF();
+    private Path mHoleCirclePath = new Path();
 
-    /**
-     * Bitmap for drawing the center hole
-     */
-    protected WeakReference<Bitmap> mDrawBitmap;
-
-    protected Canvas mBitmapCanvas;
 
     public PieChartRenderer(PieChart chart, ChartAnimator animator,
                             ViewPortHandler viewPortHandler) {
@@ -119,7 +120,6 @@ public class PieChartRenderer extends DataRenderer {
         return mDefaultEntryLabelsPaint;
     }
 
-
     public List<Paint> getPaintsEntryLabels() {
         return mEntryLabelsPaints;
     }
@@ -157,9 +157,6 @@ public class PieChartRenderer extends DataRenderer {
                 drawDataSet(c, set);
         }
     }
-
-    private Path mPathBuffer = new Path();
-    private RectF mInnerRectBuffer = new RectF();
 
     protected float calculateMinimumRadiusForSpacedSlice(
             MPPointF center,
@@ -537,7 +534,7 @@ public class PieChartRenderer extends DataRenderer {
 
                         if (drawXOutside && mEntryLabelsPaints.size() == 1) {
                             mEntryLabelsPaints.get(0).setTextAlign(Align.RIGHT);
-                        } else {
+                        } else if (drawXOutside) {
                             mEntryLabelsPaints.get(j).setTextAlign(Align.RIGHT);
                         }
 
@@ -549,9 +546,9 @@ public class PieChartRenderer extends DataRenderer {
                         mValuePaint.setTextAlign(Align.LEFT);
 
 
-                        if (drawXOutside) {
+                        if (drawXOutside && mEntryLabelsPaints.size() == 1) {
                             mEntryLabelsPaints.get(0).setTextAlign(Align.LEFT);
-                        } else {
+                        } else if (drawXOutside) {
                             mEntryLabelsPaints.get(j).setTextAlign(Align.LEFT);
                         }
 
@@ -666,8 +663,6 @@ public class PieChartRenderer extends DataRenderer {
         drawCenterText(c);
     }
 
-    private Path mHoleCirclePath = new Path();
-
     /**
      * draws the hole in the center of the chart and the transparent circle /
      * hole
@@ -708,8 +703,6 @@ public class PieChartRenderer extends DataRenderer {
             MPPointF.recycleInstance(center);
         }
     }
-
-    protected Path mDrawCenterTextPathBuffer = new Path();
 
     /**
      * draws the description text in the center of the pie chart makes most
@@ -782,8 +775,6 @@ public class PieChartRenderer extends DataRenderer {
             MPPointF.recycleInstance(offset);
         }
     }
-
-    protected RectF mDrawHighlightedRectF = new RectF();
 
     @Override
     public void drawHighlighted(Canvas c, Highlight[] indices) {
